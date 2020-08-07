@@ -25,8 +25,8 @@
 			"type": "boolean"
 		}
 	},
-	"author": "Nicholas J. Tustison, Brian B. Avants, Philip A. Cook, Gang Song, Sandhitsu Das, Niels van Strien, James R. Stone, James C. Gee",
-	"maintainer": "Will Tackett, Philip Cook",
+	"author": "Philip Cook, Will Tackett",
+	"maintainer": "Philip Cook, Will Tackett",
 	"cite": "Tustison, Nicholas \u0026 Avants, Brian \u0026 Cook, Philip \u0026 Song, Gang \u0026 Das, Sandhitsu \u0026 van Strien, Niels \u0026 Stone, James \u0026 Gee, James. (2013). The ANTs cortical thickness processing pipeline. Progress in Biomedical Optics and Imaging - Proceedings of SPIE. 8672. 86720K. 10.1117/12.2007128. ",
 	"license": "Apache License 2.0",
 	"source": "https://github.com/ftdc-picsl/antsct_fw",
