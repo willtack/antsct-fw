@@ -1,0 +1,68 @@
+#!/bin/bash
+FLYWHEEL_BASE=/flywheel/v0
+MANIFEST_FILE=$FLYWHEEL_BASE/manifest.json
+CONFIG_FILE=$FLYWHEEL_BASE/config.json
+ANALYSIS_ID=$(jq -r '.destination.id' $CONFIG_FILE)
+GEAR_INPUT_DIR=$FLYWHEEL_BASE/input
+GEAR_OUTPUT_DIR=$FLYWHEEL_BASE/output
+ANTS_OUTPUT_DIR=$GEAR_OUTPUT_DIR/"$ANALYSIS_ID"
+WORKING_DIR=$GEAR_OUTPUT_DIR/"$ANALYSIS_ID"_work
+BIDS_DIR=$GEAR_INPUT_DIR/bids_dataset
+CONTAINER='[flywheel/antsct]'
+EXE_SCRIPT=$GEAR_OUTPUT_DIR/antsct_run.sh
+
+# CRITICAL: re-create the environment
+cat ${FLYWHEEL_BASE}/docker-env.sh
+# shellcheck source=/flywheel/v0/docker-env.sh
+source ${FLYWHEEL_BASE}/docker-env.sh
+
+function error_exit()
+{
+	echo "$@" 1>&2
+	exit 1
+}
+function parse_config {
+  # Parse the config file
+  CONFIG_FILE=$FLYWHEEL_BASE/config.json
+  MANIFEST_FILE=$FLYWHEEL_BASE/manifest.json
+
+  if [[ -f $CONFIG_FILE ]]; then
+    echo "$(cat $CONFIG_FILE | jq -r '.config.'"$1")"
+  else
+    CONFIG_FILE=$MANIFEST_FILE
+    echo "$(cat $MANIFEST_FILE | jq -r '.config.'"$1"'.default')"
+  fi
+}
+
+#config_num_threads="$(parse_config 'num-threads')"
+#config_denoise="$(parse_config 'denoise')"
+#config_run_quick="$(parse_config 'run-quick')"
+#config_trim_neck="$(parse_config 'trim-neck')"
+
+# Download BIDS and write command
+if [[ ! -d ${BIDS_DIR} ]]; then
+  timeout 30m /usr/local/miniconda/bin/python /flywheel/v0/prepare_run.py
+fi
+
+if [[ ! -f $EXE_SCRIPT ]]; then
+  echo "$CONTAINER Unable to create ANTsCT run environment! Exiting"
+  error_exit 1
+fi
+
+bash -x ${FLYWHEEL_BASE}/output/antsct_run.sh
+
+ANTS_EXITSTATUS=$?
+
+if [[ $ANTS_EXITSTATUS == 0 ]]; then
+  echo "test"
+  # do stuff
+
+
+fi
+
+# Clean up
+rm -rf "$WORKING_DIR"
+rm -rf "$ANTS_OUTPUT_DIR"
+
+echo -e "Wrote: $(ls -lh $GEAR_OUTPUT_DIR)"
+exit $ANTS_EXITSTATUS
