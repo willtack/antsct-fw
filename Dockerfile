@@ -40,6 +40,7 @@ RUN conda install -y python=3.7.1 \
 RUN pip install flywheel-sdk
 RUN pip install heudiconv
 RUN pip install --upgrade fw-heudiconv ipython
+RUN pip install pybids
 
 
 ############################
