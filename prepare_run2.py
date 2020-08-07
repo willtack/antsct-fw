@@ -121,8 +121,7 @@ def fw_heudiconv_download():
     # if extra_t2 is not None:
     #     get_external_bids(extra_t2, extra_t2_path)
 
-
-    return subject_label, session_label
+    return True
 
 
 def create_derivatives_zip(failed):
