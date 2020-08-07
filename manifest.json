@@ -1,37 +1,18 @@
 {
 	"name": "antsct-fw",
 	"label": "ANTs Cortical Thickness",
-	"description": "",
 	"version": "0.1.0_0.1.0",
-  "custom": {
-		"gear-builder": {
-			"category": "analysis",
-			"image": "willtack/antsct-fw:"
-		},
-    "flywheel":{"suite": "BrainScienceCenter"}
-  },
-	"author": "Nicholas J. Tustison, Brian B. Avants, Philip A. Cook, Gang Song, Sandhitsu Das, Niels van Strien, James R. Stone, James C. Gee",
-	"maintainer": "Will Tackett, Philip Cook",
-	"cite": "Tustison, Nicholas & Avants, Brian & Cook, Philip & Song, Gang & Das, Sandhitsu & van Strien, Niels & Stone, James & Gee, James. (2013). The ANTs cortical thickness processing pipeline. Progress in Biomedical Optics and Imaging - Proceedings of SPIE. 8672. 86720K. 10.1117/12.2007128. ",
-	"license": "Apache License 2.0",
-	"source": "https://github.com/ftdc-picsl/antsct_fw",
-	"url": "https://doi.org/10.1117/12.2007128",
-	"inputs": {
-		"output-file-root": {
-			"description": "Prepended onto output files. A sensible value of this would be '${subject}_${session}_'.",
-			"type": "string"
-		}
-	},
+	"inputs": {},
 	"config": {
-		"num-threads":{
-			"default": 1,
-			"description": "Maximum number of CPU threads to use. Set to 0 to use as many threads as there are cores",
-			"type": "integer"
-		},
 		"denoise": {
 			"default": true,
 			"description": "Run denoising within the ACT pipeline (default = true).",
 			"type": "boolean"
+		},
+		"num-threads": {
+			"default": 1,
+			"description": "Maximum number of CPU threads to use. Set to 0 to use as many threads as there are cores",
+			"type": "integer"
 		},
 		"run-quick": {
 			"default": false,
@@ -42,6 +23,18 @@
 			"default": true,
 			"description": "'true' to run the trim_neck.sh script, 'false' to use the raw data (default = true)",
 			"type": "boolean"
+		}
+	},
+	"author": "Will Tackett",
+	"maintainer": "Will Tackett",
+	"cite": "Tustison, Nicholas \u0026 Avants, Brian \u0026 Cook, Philip \u0026 Song, Gang \u0026 Das, Sandhitsu \u0026 van Strien, Niels \u0026 Stone, James \u0026 Gee, James. (2013). The ANTs cortical thickness processing pipeline. Progress in Biomedical Optics and Imaging - Proceedings of SPIE. 8672. 86720K. 10.1117/12.2007128. ",
+	"license": "Apache License 2.0",
+	"source": "https://github.com/ftdc-picsl/antsct_fw",
+	"url": "https://doi.org/10.1117/12.2007128",
+	"custom": {
+		"gear-builder": {
+			"category": "analysis",
+			"image": "willtack/antsct-fw:0.1.0_0.1.0"
 		}
 	}
 }
