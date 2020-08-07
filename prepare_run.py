@@ -59,7 +59,7 @@ def write_command(anat_input, subject_label, session_label ):
     with flywheel.GearContext() as context:
         cmd = ['/opt/scripts/runAntsCT_nonBIDS.pl',
                '--anatomical-image {}'.format(anat_input),
-               '--output-dir {}'.format(output_root),
+               '--output-dir {}'.format(gear_output_dir),
                '--output-file-root sub-{}_ses-{}'.format(subject_label, session_label),
                '--denoise {}'.format(denoise),
                '--num-threads {}'.format(num_threads),
@@ -118,8 +118,6 @@ def fw_heudiconv_download():
     #     get_external_bids(extra_t2, extra_t2_path)
     layout = BIDSLayout(bids_root)
     anat_list = layout.get(suffix="T1w", extension="nii.gz")
-    # just get the first one for now
-    anat_inputs = anat_list[0]
 
     # Get subject and session label
     subject_label = layout.get(return_type='id', target='subject')[0].strip("[']")
@@ -129,16 +127,19 @@ def fw_heudiconv_download():
         logger.warning("No anatomical files found in %s", bids_root)
         return False
 
+    # just get the first one for now
+    anat_inputs = anat_list[0]
+
     return anat_inputs, subject_label, session_label
 
 
-def create_derivatives_zip(failed):
-    output_fname = results_zipfile
-    derivatives_files = list(output_root.glob("**/*"))
-    with ZipFile(str(output_fname), "w") as zipf:
-        for derivative_f in derivatives_files:
-            zipf.write(str(derivative_f),
-                       str(derivative_f.relative_to(output_root)))
+# def create_derivatives_zip(failed):
+#     output_fname = results_zipfile
+#     derivatives_files = list(output_root.glob("**/*"))
+#     with ZipFile(str(output_fname), "w") as zipf:
+#         for derivative_f in derivatives_files:
+#             zipf.write(str(derivative_f),
+#                        str(derivative_f.relative_to(output_root)))
 
 
 # def create_workingdir_zip():
