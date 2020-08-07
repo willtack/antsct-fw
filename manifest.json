@@ -15,7 +15,7 @@
 	"cite": "Tustison, Nicholas & Avants, Brian & Cook, Philip & Song, Gang & Das, Sandhitsu & van Strien, Niels & Stone, James & Gee, James. (2013). The ANTs cortical thickness processing pipeline. Progress in Biomedical Optics and Imaging - Proceedings of SPIE. 8672. 86720K. 10.1117/12.2007128. ",
 	"license": "Apache License 2.0",
 	"source": "https://github.com/ftdc-picsl/antsct_fw",
-	"url": "",
+	"url": "https://doi.org/10.1117/12.2007128",
 	"inputs": {
 		"output-file-root": {
 			"description": "Prepended onto output files. A sensible value of this would be '${subject}_${session}_'.",
