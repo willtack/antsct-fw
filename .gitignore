@@ -1,3 +1,5 @@
 .idea
 heuristic.py
 __pycache__/
+config.json
+docker-env.sh
