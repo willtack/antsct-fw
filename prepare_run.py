@@ -24,8 +24,8 @@ with flywheel.GearContext() as context:
     antsct_script = gear_output_dir / "antsct_run.sh"
     output_root = gear_output_dir / analysis_id
     working_dir = PosixPath(str(output_root.resolve()) + "_work")
-    input_dir = PosixPath(context.input_dir)
-    bids_root = input_dir / 'bids_dataset'
+    bids_dir = output_root
+    bids_root = output_root / 'bids_dataset'
 
     # Get image version
     ant_version = '0.1.0'
@@ -109,7 +109,7 @@ def fw_heudiconv_download():
     # Do the download!
     bids_root.parent.mkdir(parents=True, exist_ok=True)
     downloads = export.gather_bids(fw, project_label, subjects, sessions)
-    export.download_bids(fw, downloads, str(input_dir.resolve()), dry_run=False)
+    export.download_bids(fw, downloads, str(bids_dir.resolve()), dry_run=False)
 
     # Download the extra T1w or T2w
     # if extra_t1 is not None:
