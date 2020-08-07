@@ -60,7 +60,7 @@ def write_command(anat_input, subject_label, session_label ):
         cmd = ['/opt/scripts/runAntsCT_nonBIDS.pl',
                '--anatomical-image {}'.format(anat_input),
                '--output-dir {}'.format(gear_output_dir),
-               '--output-file-root sub-{}_ses-{}'.format(subject_label, session_label),
+               '--output-file-root sub-{}_ses-{}_'.format(subject_label, session_label),
                '--denoise {}'.format(denoise),
                '--num-threads {}'.format(num_threads),
                '--run-quick {}'.format(run_quick),
