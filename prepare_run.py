@@ -61,7 +61,7 @@ def write_command(anat_input, subject_label, session_label ):
                '--anatomical-image {}'.format(anat_input),
                '--output-dir {}'.format(gear_output_dir),
                '--output-file-root sub-{}_ses-{}_'.format(subject_label, session_label),
-               '--denoise {}'.format(denoise),
+               # '--denoise {}'.format(denoise),
                '--num-threads {}'.format(num_threads),
                '--run-quick {}'.format(run_quick),
                '--trim-neck {}'.format(trim_neck)
@@ -128,9 +128,9 @@ def fw_heudiconv_download():
         return False
 
     # just get the first one for now
-    anat_inputs = anat_list[0]
+    anat_input = anat_list[0].path
 
-    return anat_inputs, subject_label, session_label
+    return anat_input, subject_label, session_label
 
 
 # def create_derivatives_zip(failed):
