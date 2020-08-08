@@ -54,13 +54,13 @@ with flywheel.GearContext() as context:
     # errorlog_zipfile = gear_output_dir / (analysis_id + "_qsiprep_errorlog.zip")
 
 
-def write_command(anat_input, subject_label, session_label ):
+def write_command(anat_input, prefix):
     """Create a command script."""
     with flywheel.GearContext() as context:
         cmd = ['/opt/scripts/runAntsCT_nonBIDS.pl',
                '--anatomical-image {}'.format(anat_input),
                '--output-dir {}'.format(gear_output_dir),
-               '--output-file-root sub-{}_ses-{}_'.format(subject_label, session_label),
+               '--output-file-root {}'.format(prefix),
                # '--denoise {}'.format(denoise),
                '--num-threads {}'.format(num_threads),
                '--run-quick {}'.format(run_quick),
@@ -120,8 +120,8 @@ def fw_heudiconv_download():
     anat_list = layout.get(suffix="T1w", extension="nii.gz")
 
     # Get subject and session label
-    subject_label = layout.get(return_type='id', target='subject')[0].strip("[']")
-    session_label = layout.get(return_type='id', target='session')[0].strip("[']")
+    # subject_label = layout.get(return_type='id', target='subject')[0].strip("[']")
+    # session_label = layout.get(return_type='id', target='session')[0].strip("[']")
 
     if not len(anat_list):
         logger.warning("No anatomical files found in %s", bids_root)
@@ -130,7 +130,10 @@ def fw_heudiconv_download():
     # just get the first one for now
     anat_input = anat_list[0].path
 
-    return anat_input, subject_label, session_label
+    # Generate prefix from bids layout
+    prefix = anat_input.split('/')[-1].split('.')[0]
+
+    return anat_input, prefix
 
 
 # def create_derivatives_zip(failed):
@@ -158,13 +161,13 @@ def main():
     #     logger.warning("Critical error while trying to download BIDS data.")
     #     return 1
     try:
-        anat_input, sub_label, ses_label = fw_heudiconv_download()
+        anat_input, prefix = fw_heudiconv_download()
     except Exception as e:
         print(e)
         logger.warning("Critical error while trying to download BIDS data.")
         return 1
 
-    command_ok = write_command(anat_input, sub_label, ses_label)
+    command_ok = write_command(anat_input, prefix)
     sys.stdout.flush()
     sys.stderr.flush()
     if not command_ok:
