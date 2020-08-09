@@ -62,7 +62,7 @@ fi
 
 # Clean up
 #rm -rf "$WORKING_DIR"
-#rm -rf "$ANTS_OUTPUT_DIR"
+rm -rf "$ANTS_OUTPUT_DIR"
 
 echo -e "Wrote: $(ls -lh $GEAR_OUTPUT_DIR)"
 exit $ANTS_EXITSTATUS
