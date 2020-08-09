@@ -27,9 +27,6 @@ with flywheel.GearContext() as context:
     bids_dir = output_root
     bids_root = output_root / 'bids_dataset'
 
-    # Get image version
-    ant_version = '0.1.0'
-
     # Get relevant container objects
     fw = flywheel.Client(context.get_input('api_key')['key'])
     analysis_container = fw.get(analysis_id)
