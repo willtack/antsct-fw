@@ -11,7 +11,7 @@
 	"config": {
 		"denoise": {
 			"default": true,
-			"description": "Run denoising within the ACT pipeline (default = true).",
+			"description": "Run denoising within the ACT pipeline.",
 			"type": "boolean"
 		},
 		"num-threads": {
@@ -21,12 +21,12 @@
 		},
 		"run-quick": {
 			"default": false,
-			"description": "true to use quick registration, 0 to use the default (default = false)",
+			"description": "'true' to use quick registration, 'false' to use the default registration.",
 			"type": "boolean"
 		},
 		"trim-neck": {
 			"default": true,
-			"description": "'true' to run the trim_neck.sh script, 'false' to use the raw data (default = true)",
+			"description": "'true' to run the trim_neck.sh script, 'false' to use the raw data.",
 			"type": "boolean"
 		}
 	},
