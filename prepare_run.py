@@ -128,7 +128,7 @@ def fw_heudiconv_download():
     anat_input = anat_list[0].path
 
     # Generate prefix from bids layout
-    prefix = anat_input.split('/')[-1].split('.')[0]
+    prefix = anat_input.split('/')[-1].split('.')[0] + '_'
 
     return anat_input, prefix
 
