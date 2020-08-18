@@ -54,10 +54,30 @@ bash -x ${FLYWHEEL_BASE}/output/antsct_run.sh
 ANTS_EXITSTATUS=$?
 
 if [[ $ANTS_EXITSTATUS == 0 ]]; then
-  echo "test"
-  # do stuff
 
+  # make a BIDS derivatives folder and zip
+  BIDS_OUTPUT_DIR="$GEAR_OUTPUT_DIR/ants-ct"
+  mkdir -p "$BIDS_OUTPUT_DIR"
+  # parse the run script to get the file-root (aka prefix)
+  fileRoot=$(cat ${FLYWHEEL_BASE}/output/antsct_run.sh | grep -o -P '(?<=file-root ).*(?=_ --denoise)')
+  bash ${FLYWHEEL_BASE}/BIDsDerivative.sh "$GEAR_OUTPUT_DIR" "$BIDS_OUTPUT_DIR" "$fileRoot"
+  pushd "$GEAR_OUTPUT_DIR"
+  zip -r "${GEAR_OUTPUT_DIR}/antsct_${ANALYSIS_ID}_bids.zip" ants-ct
+  popd
+  rm -rf "$BIDS_OUTPUT_DIR"
 
+  # move everything in outputs folder to a single directory and zip
+  LEGACY_OUTPUT_DIR="$GEAR_OUTPUT_DIR/antsct_${ANALYSIS_ID}"
+  mkdir -p "$LEGACY_OUTPUT_DIR"
+  find "$GEAR_OUTPUT_DIR" -type f -maxdepth 1 | grep -v antsct | while read line
+  do
+    mv $line $LEGACY_OUTPUT_DIR/
+  done
+
+  pushd "$LEGACY_OUTPUT_DIR"
+  zip -r "${GEAR_OUTPUT_DIR}/antsct_${ANALYSIS_ID}.zip" ./*
+  popd
+  rm -rf "$LEGACY_OUTPUT_DIR"
 fi
 
 # Clean up

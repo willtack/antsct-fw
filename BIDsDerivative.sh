@@ -113,7 +113,7 @@ cp ${inputDir}/*.png ${anatDir}/
 #  For BrainSegmentation and BrainSegmentationPosteriors, the number of tissue classes is determined by priors;
 #    so how do we automate creating the TSV lookup table and labelling the files?
 #  RawSources
-#  How to convey SourceEntities (i.e. prefix) in run script. Maybe parse antsct_run.sh?
+#  How to convey SourceEntities (i.e. prefix) in run script. Maybe parse antsct_run.sh? DONE
 
 # IDEAS
 # Do we really need json sidecars that simply say skullstripped: true? They're all skullstripped except for one which has Extracted in the filename
