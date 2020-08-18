@@ -36,7 +36,7 @@ with flywheel.GearContext() as context:
 
     project_label = project_container.label
 
-    # configs
+    # configs, use int() to translate the booleans to 0 or 1
     output_prefix = config.get('output-file-root')
     denoise = int(config.get('denoise'))
     num_threads = config.get('num-threads')
@@ -128,7 +128,8 @@ def fw_heudiconv_download():
     anat_input = anat_list[0].path
 
     # Generate prefix from bids layout
-    prefix = anat_input.split('/')[-1].split('.')[0] + '_'
+    basename = anat_list[0].filename.split('.')[0]
+    prefix = basename.replace('_T1w', '') + '_'
 
     return anat_input, prefix
 
