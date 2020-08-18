@@ -2,11 +2,9 @@
 
 ############################
 # Get the image from DockerHub
-FROM cookpa/antsct-aging:0.1.0
+FROM cookpa/antsct-aging:0.1.4
 
 MAINTAINER Will Tackett <William.Tackett@pennmedicine.upenn.edu>
-
-ENV ANTSCT_VERSION 0.1.0
 
 ############################
 # Install basic dependencies

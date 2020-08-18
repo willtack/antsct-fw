@@ -58,7 +58,7 @@ def write_command(anat_input, prefix):
                '--anatomical-image {}'.format(anat_input),
                '--output-dir {}'.format(gear_output_dir),
                '--output-file-root {}'.format(prefix),
-               # '--denoise {}'.format(denoise),
+               '--denoise {}'.format(denoise),
                '--num-threads {}'.format(num_threads),
                '--run-quick {}'.format(run_quick),
                '--trim-neck {}'.format(trim_neck)
