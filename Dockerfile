@@ -13,6 +13,7 @@ RUN apt-get update && apt-get -y install \
     tar \
     zip \
     curl \
+    nano \
     build-essential
 #RUN rm -f /usr/bin/python && ln -s /usr/bin/python /usr/bin/python3
 
@@ -48,6 +49,7 @@ RUN mkdir -p ${FLYWHEEL}
 COPY run ${FLYWHEEL}/run
 COPY prepare_run.py ${FLYWHEEL}/prepare_run.py
 COPY manifest.json ${FLYWHEEL}/manifest.json
+COPY BIDsDerivative.sh ${FLYWHEEL}/BIDsDerivative.sh
 RUN chmod a+rx ${FLYWHEEL}/*
 
 # Set the entrypoint
