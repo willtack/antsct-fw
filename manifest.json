@@ -2,7 +2,7 @@
 	"name": "antsct-fw",
 	"label": "ANTs Cortical Thickness",
 	"description": "Gear version of the antsCorticalThickness.sh pipeline. Performs 1. Brain extraction  2. Brain n-tissue segmentation  3. Cortical thickness  4. (Optional) registration to a template",
-	"version": "0.1.1_0.1.4",
+	"version": "0.1.2_0.1.4",
 	"inputs": {
 		"api_key": {
       		"base": "api-key"
@@ -39,7 +39,7 @@
 	"custom": {
 		"gear-builder": {
 			"category": "analysis",
-			"image": "willtack/antsct-fw:0.1.1_0.1.4"
+			"image": "willtack/antsct-fw:0.1.2_0.1.4"
 		},
 		"flywheel":{"suite": "BrainScienceCenter"}
 	}

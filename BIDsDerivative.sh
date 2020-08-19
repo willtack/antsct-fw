@@ -113,6 +113,7 @@ cp ${inputDir}/*.png ${anatDir}/
 #  For BrainSegmentation and BrainSegmentationPosteriors, the number of tissue classes is determined by priors;
 #    so how do we automate creating the TSV lookup table and labelling the files?
 #  RawSources
+#  Automatically use the name of template instead of hard-coding
 #  How to convey SourceEntities (i.e. prefix) in run script. Maybe parse antsct_run.sh? DONE
 
 # IDEAS
