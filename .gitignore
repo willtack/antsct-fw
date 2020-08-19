@@ -4,3 +4,4 @@ __pycache__/
 config.json
 docker-env.sh
 build_and_deploy.sh
+prepare_run2.py
