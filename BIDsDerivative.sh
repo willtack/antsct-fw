@@ -5,12 +5,14 @@
 
 inputDir=$1
 outputDir=$2
-sourceEntities=$3
+#sourceEntities=$3
+subjectName=$3
+sessionName=$4
 templateName='template'
 
 # derive subject and session name
-subjectName=$(echo "${sourceEntities}" | cut -d '_' -f 1)
-sessionName=$(echo "${sourceEntities}" | cut -d '_' -f 2)
+#subjectName=$(echo "${sourceEntities}" | cut -d '_' -f 1)
+#sessionName=$(echo "${sourceEntities}" | cut -d '_' -f 2)
 
 # transfer logs
 logDir="${outputDir}/logs"
@@ -24,16 +26,15 @@ touch ${missingTXT}
 anatDir="${outputDir}/${subjectName}/${sessionName}/anat"
 mkdir -p "${anatDir}"
 
-# function to copy and print out missing files
+# function to copy files or log if they are missing
 transfer () {
   cp $1 $2 || echo $1 >> ${missingTXT}
 }
 
-# define templates for json sidecars
-#preprocTemplate='{\n"SkullStripped": %s\n}'
+# define the template for the mask json sidecar
 maskTemplate='{\n"RawSources": "%s",\n"Type": "Brain"\n}'
-#lookupTable="index\tname\n1\tCerebrospinal\ Fluid\n2\tCortical\ Gray Matter\n3\tWhite\ Matter\n4\tSubcortical\ Gray\ Matter\n5\tBrain\ Stem\n6\tCerebellum"
-T=$(printf '\t')
+# create the table to override BIDS default tissue label scheme
+T=$(printf '\t') # encode a tab into variable
 cat > ${anatDir}/${sourceEntities}_space-orig_dseg.tsv << EOF
 index $T name
 1 $T Cerebrospinal Fluid
@@ -44,22 +45,16 @@ index $T name
 6 $T Cerebellum
 EOF
 
+# Rename and copy files from the gear output/ to the anat/ directory of the BIDS derivatives dataset
 transfer ${inputDir}/*_BrainExtractionMask.nii.gz ${anatDir}/${sourceEntities}_space-orig_desc-brain_mask.nii.gz
 printf "$maskTemplate" "${inputDir}/${sourceEntities}.nii.gz" > ${anatDir}/${sourceEntities}_space-orig_desc-brain_mask.json
 transfer ${inputDir}/*_BrainNormalizedToTemplate.nii.gz ${anatDir}/${sourceEntities}_space-${templateName}_T1w.nii.gz
-#printf "$preprocTemplate" "true" > ${anatDir}/${sourceEntities}_space-${templateName}_T1w.json
 transfer ${inputDir}/*_NeckTrim.nii.gz ${anatDir}/${sourceEntities}_space-orig_desc-necktrim_T1w.nii.gz
-#printf "$preprocTemplate" "true" > ${anatDir}/${sourceEntities}_space-orig_desc-necktrim_T1w.json
 transfer ${inputDir}/*_BrainSegmentation0N4.nii.gz ${anatDir}/${sourceEntities}_space-orig_desc-corrected_T1w.nii.gz
-#printf "$preprocTemplate" "false" > ${anatDir}/${sourceEntities}_space-orig_desc-corrected_T1w.json
 transfer ${inputDir}/*_ExtractedBrain0N4.nii.gz ${anatDir}/${sourceEntities}_space-orig_desc-correctedExtracted_T1w.nii.gz
-#printf "$preprocTemplate" "true" > ${anatDir}/${sourceEntities}_space-orig_desc-correctedExtracted_T1w.json
 transfer ${inputDir}/*_BrainSegmentation.nii.gz ${anatDir}/${sourceEntities}_space-orig_dseg.nii.gz
-#printf $lookupTable > ${anatDir}/${sourceEntities}_space-orig_dseg.tsv
 transfer ${inputDir}/*_CorticalThickness.nii.gz ${anatDir}/${sourceEntities}_space-orig_desc-thickness_T1w.nii.gz
-#printf "$preprocTemplate" "true" > ${anatDir}/${sourceEntities}_space-orig_desc-thickness_T1w.json
 transfer ${inputDir}/*_CorticalThicknessNormalizedToTemplate.nii.gz ${anatDir}/${sourceEntities}_space-${templateName}_desc-thickness_T1w.nii.gz
-#printf "$preprocTemplate" "true" > ${anatDir}/${sourceEntities}_space-${templateName}_desc-thickness_T1w.json
 transfer ${inputDir}/*_CorticalMask.nii.gz ${anatDir}/${sourceEntities}_space-orig_desc-cortex_mask.nii.gz
 printf "$maskTemplate" "${inputDir}/${sourceEntities}.nii.gz" > ${anatDir}/${sourceEntities}_space-orig_desc-cortex_mask.json
 transfer ${inputDir}/*_RegistrationTemplateBrainMask.nii.gz ${anatDir}/${sourceEntities}_space-${templateName}_desc-brain_mask.nii.gz
@@ -67,6 +62,7 @@ printf "$maskTemplate" "${inputDir}/${sourceEntities}.nii.gz" > ${anatDir}/${sou
 
 # copy brain segmentation posteriors to anat/ then loop and rename based on label number
 translateLabel () {
+  # ANTs labels tissues with numbers. This function translates numbers into tissue abbreviations
   if [ "$1" = "1" ]; then
     echo "CSF"
   elif [ "$1" = "2" ]; then
@@ -102,12 +98,12 @@ transfer ${inputDir}/*_TemplateToSubject1GenericAffine.mat ${anatDir}/${sourceEn
 transfer ${inputDir}/*_SubjectToTemplateLogJacobian.nii.gz ${anatDir}/${sourceEntities}_from-T1w_to-${templateName}_desc-logjacobian_T1w.nii.gz
 
 # atlas-based derivatives
-cp ${inputDir}/*.csv ${anatDir}/
-cp ${inputDir}/*Lausanne* ${anatDir}/
-cp ${inputDir}/*DKT31* ${anatDir}/
+cp ${inputDir}/*.csv ${anatDir}/ || echo "One or more csvs are missing. ">> ${missingTXT}
+cp ${inputDir}/*Lausanne* ${anatDir}/ || echo "One or more Lausanne parcellations are missing." >> ${missingTXT}
+cp ${inputDir}/*DKT31* ${anatDir}/ || echo "One or more DKT31 parcellations are missing." >> ${missingTXT}
 
 # PNGs
-cp ${inputDir}/*.png ${anatDir}/
+cp ${inputDir}/*.png ${anatDir}/ || echo "One or more PNG images are missing." >> ${missingTXT}
 
 # ISSUES
 #  For BrainSegmentation and BrainSegmentationPosteriors, the number of tissue classes is determined by priors;
