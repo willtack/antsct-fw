@@ -42,9 +42,10 @@ with flywheel.GearContext() as context:
     num_threads = config.get('num-threads')
     run_quick = int(config.get('run-quick'))
     trim_neck = int(config.get('trim-neck'))
+    override = int(config.get('force-multiple'))
 
     # output zips
-    results_zipfile = gear_output_dir / (analysis_id + "_antsct_results.zip")
+    # results_zipfile = gear_output_dir / (analysis_id + "_antsct_results.zip")
     # debug_derivatives_zipfile = gear_output_dir / (
     #     analysis_id + "_debug_qsiprep_derivatives.zip")
     # working_dir_zipfile = gear_output_dir / (analysis_id + "_qsiprep_workdir.zip")
@@ -106,7 +107,7 @@ def fw_heudiconv_download():
     # Do the download!
     bids_root.parent.mkdir(parents=True, exist_ok=True)
     downloads = export.gather_bids(fw, project_label, subjects, sessions)
-    export.download_bids(fw, downloads, str(bids_dir.resolve()), dry_run=False)
+    export.download_bids(fw, downloads, str(bids_dir.resolve()), dry_run=False, folders_to_download=['anat'])
 
     # Download the extra T1w or T2w
     # if extra_t1 is not None:
@@ -120,18 +121,39 @@ def fw_heudiconv_download():
     # subject_label = layout.get(return_type='id', target='subject')[0].strip("[']")
     # session_label = layout.get(return_type='id', target='session')[0].strip("[']")
 
-    if not len(anat_list):
+    # if there are multiple files or no files, error out
+    # if there are multiple files but the user said that was okay, use all of them
+    # otherwise just use the one
+    if not override and len(anat_list) > 1:
+        logger.warning("Multiple anatomical files found in %s. If you want to process multiple images, make sure to select the override config.", bids_root)
+        return False
+    elif not len(anat_list) or len(anat_list) == 0:
         logger.warning("No anatomical files found in %s", bids_root)
         return False
+    elif override and len(anat_list) > 0:
+        # Use all found T1s (how am I going to do this?)
+        anat_bids_image = anat_list[0]
+    else:
+        anat_bids_image = anat_list[0]
 
-    # just get the first one for now
-    anat_input = anat_list[0].path
+    anat_input = anat_bids_image.path
+
+    # TODO: set up BIDs filtering (Maybe just for acquisition and run?)
+    # filters = {"subject": subjects, "type": 'T1w', extensions:['.nii', '.nii.gz'], return_type: 'file'}
+    #
+    # if args.session_label:
+    #     filters["session"] = args.session_label
+    #
+    # if args.acquisition_label:
+    #     filters["acquisition"] = args.acquisition_label
+    #
+    # T1w_files = layout.get(filters)
 
     # Generate prefix from bids layout
-    basename = anat_list[0].filename.split('.')[0]
+    basename = anat_bids_image.filename.split('.')[0]
     prefix = basename.replace('_T1w', '') + '_'
 
-    return anat_input, prefix
+    return True, anat_input, prefix
 
 
 # def create_derivatives_zip(failed):
@@ -152,18 +174,18 @@ def fw_heudiconv_download():
 
 
 def main():
-    # download_ok = fw_heudiconv_download()
-    # sys.stdout.flush()
-    # sys.stderr.flush()
-    # if not download_ok:
-    #     logger.warning("Critical error while trying to download BIDS data.")
-    #     return 1
-    try:
-        anat_input, prefix = fw_heudiconv_download()
-    except Exception as e:
-        print(e)
+    download_ok, anat_input, prefix = fw_heudiconv_download()
+    sys.stdout.flush()
+    sys.stderr.flush()
+    if not download_ok:
         logger.warning("Critical error while trying to download BIDS data.")
         return 1
+    # try:
+    #     anat_input, prefix = fw_heudiconv_download()
+    # except Exception as e:
+    #     print(e)
+    #     logger.warning("Critical error while trying to download BIDS data.")
+    #     return 1
 
     command_ok = write_command(anat_input, prefix)
     sys.stdout.flush()
