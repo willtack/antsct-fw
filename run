@@ -23,9 +23,6 @@ function error_exit()
 }
 function parse_config {
   # Parse the config file
-  CONFIG_FILE=$FLYWHEEL_BASE/config.json
-  MANIFEST_FILE=$FLYWHEEL_BASE/manifest.json
-
   if [[ -f $CONFIG_FILE ]]; then
     echo "$(cat $CONFIG_FILE | jq -r '.config.'"$1")"
   else
@@ -34,12 +31,22 @@ function parse_config {
   fi
 }
 
+# determine the input format
+inputFormat='bids' #default to BIDS
+isManualInput=$(jq '.inputs.anatomical' "$CONFIG_FILE")
+if [[ ! $isManualInput = null ]]; then
+  inputFormat='manual'
+else
+  inputFormat='bids'
+fi
+
 #config_num_threads="$(parse_config 'num-threads')"
 #config_denoise="$(parse_config 'denoise')"
 #config_run_quick="$(parse_config 'run-quick')"
 #config_trim_neck="$(parse_config 'trim-neck')"
 
 # Download BIDS and write command
+# Do the download no matter the input format because BIDS dataset needed to determine the prefix
 if [[ ! -d ${BIDS_DIR} ]]; then
   timeout 30m /usr/local/miniconda/bin/python /flywheel/v0/prepare_run.py
 fi
@@ -58,30 +65,43 @@ if [[ $ANTS_EXITSTATUS == 0 ]]; then
   # make a BIDS derivatives folder and zip
   BIDS_OUTPUT_DIR="$GEAR_OUTPUT_DIR/ants-ct"
   mkdir -p "$BIDS_OUTPUT_DIR"
+
   # parse the run script to get the file-root (aka prefix)
   fileRoot=$(cat ${FLYWHEEL_BASE}/output/antsct_run.sh | grep -o -P '(?<=file-root ).*(?=_ --denoise)')
-  bash ${FLYWHEEL_BASE}/BIDsDerivative.sh "$GEAR_OUTPUT_DIR" "$BIDS_OUTPUT_DIR" "$fileRoot"
-  pushd "$GEAR_OUTPUT_DIR"
-  zip -r "${GEAR_OUTPUT_DIR}/antsct_${ANALYSIS_ID}_bids.zip" ants-ct
-  popd
-  rm -rf "$BIDS_OUTPUT_DIR"
+  subjectName=$(echo "$fileRoot" | cut -d '_' -f 1)
+  sessionName=$(echo "$fileRoot" | cut -d '_' -f 2)
 
-  # move everything in outputs folder to a single directory and zip
-  LEGACY_OUTPUT_DIR="$GEAR_OUTPUT_DIR/antsct_${ANALYSIS_ID}"
-  mkdir -p "$LEGACY_OUTPUT_DIR"
-  find "$GEAR_OUTPUT_DIR" -type f -maxdepth 1 | grep -v antsct | while read line
-  do
-    mv $line $LEGACY_OUTPUT_DIR/
-  done
-
-  pushd "$LEGACY_OUTPUT_DIR"
-  zip -r "${GEAR_OUTPUT_DIR}/antsct_${ANALYSIS_ID}.zip" ./*
-  popd
-  rm -rf "$LEGACY_OUTPUT_DIR"
+  if [[ $inputFormat = 'bids' ]]; then
+      # arrange derivatives
+      bash ${FLYWHEEL_BASE}/BIDsDerivative.sh "$GEAR_OUTPUT_DIR" "$BIDS_OUTPUT_DIR" "$subjectName" "$sessionName"
+      # zip folder (cd there is easier)
+      pushd "$GEAR_OUTPUT_DIR"
+    #  zip -r "${GEAR_OUTPUT_DIR}/antsct_${ANALYSIS_ID}_bids.zip" ants-ct
+      zip -r "${GEAR_OUTPUT_DIR}/antsct_${subjectName}_${sessionName}_bids.zip" ants-ct
+      popd
+      rm -rf "$BIDS_OUTPUT_DIR"
+  elif [[ $inputFormat = 'manual' ]]; then
+      # move everything in outputs folder to a single directory and zip
+      LEGACY_OUTPUT_DIR="$GEAR_OUTPUT_DIR/antsct_${ANALYSIS_ID}"
+      mkdir -p "$LEGACY_OUTPUT_DIR"
+      find "$GEAR_OUTPUT_DIR" -type f -maxdepth 1 | grep -v antsct | while read line
+      do
+        mv $line $LEGACY_OUTPUT_DIR/
+      done
+      # zip folder (cd there is easier)
+      pushd "$LEGACY_OUTPUT_DIR"
+      #zip -r "${GEAR_OUTPUT_DIR}/antsct_${ANALYSIS_ID}.zip" ./*
+      zip -r "${GEAR_OUTPUT_DIR}/antsct_${subjectName}_${subjectName}.zip" ./*
+      popd
+      rm -rf "$LEGACY_OUTPUT_DIR"
+  else
+    error_exit "Unable to determine input format..."
+  fi
 fi
 
 # Clean up
 #rm -rf "$WORKING_DIR"
+rm $(find "$GEAR_OUTPUT_DIR" -maxdepth 1 -type f | grep -v antsct )
 rm -rf "$ANTS_OUTPUT_DIR"
 
 echo -e "Wrote: $(ls -lh $GEAR_OUTPUT_DIR)"
