@@ -5,14 +5,14 @@
 
 inputDir=$1
 outputDir=$2
-#sourceEntities=$3
-subjectName=$3
-sessionName=$4
+sourceEntities=$3
+#subjectName=$3
+#sessionName=$4
 templateName='template'
 
 # derive subject and session name
-#subjectName=$(echo "${sourceEntities}" | cut -d '_' -f 1)
-#sessionName=$(echo "${sourceEntities}" | cut -d '_' -f 2)
+subjectName=$(echo "${sourceEntities}" | cut -d '_' -f 1)
+sessionName=$(echo "${sourceEntities}" | cut -d '_' -f 2)
 
 # transfer logs
 logDir="${outputDir}/logs"
