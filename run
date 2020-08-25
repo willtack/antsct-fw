@@ -33,17 +33,12 @@ function parse_config {
 
 # determine the input format
 inputFormat='bids' #default to BIDS
-isManualInput=$(jq '.inputs.anatomical' "$CONFIG_FILE")
+isManualInput=$(jq '.inputs.t1_anatomy' "$CONFIG_FILE")
 if [[ ! $isManualInput = null ]]; then
   inputFormat='manual'
 else
   inputFormat='bids'
 fi
-
-#config_num_threads="$(parse_config 'num-threads')"
-#config_denoise="$(parse_config 'denoise')"
-#config_run_quick="$(parse_config 'run-quick')"
-#config_trim_neck="$(parse_config 'trim-neck')"
 
 # Download BIDS and write command
 # Do the download no matter the input format because BIDS dataset needed to determine the prefix
@@ -62,18 +57,19 @@ ANTS_EXITSTATUS=$?
 
 if [[ $ANTS_EXITSTATUS == 0 ]]; then
 
-  # make a BIDS derivatives folder and zip
-  BIDS_OUTPUT_DIR="$GEAR_OUTPUT_DIR/ants-ct"
-  mkdir -p "$BIDS_OUTPUT_DIR"
-
   # parse the run script to get the file-root (aka prefix)
   fileRoot=$(cat ${FLYWHEEL_BASE}/output/antsct_run.sh | grep -o -P '(?<=file-root ).*(?=_ --denoise)')
   subjectName=$(echo "$fileRoot" | cut -d '_' -f 1)
   sessionName=$(echo "$fileRoot" | cut -d '_' -f 2)
 
   if [[ $inputFormat = 'bids' ]]; then
+
+      # make a BIDS derivatives folder and zip
+      BIDS_OUTPUT_DIR="$GEAR_OUTPUT_DIR/ants-ct"
+      mkdir -p "$BIDS_OUTPUT_DIR"
+
       # arrange derivatives
-      bash ${FLYWHEEL_BASE}/BIDsDerivative.sh "$GEAR_OUTPUT_DIR" "$BIDS_OUTPUT_DIR" "$subjectName" "$sessionName"
+      bash ${FLYWHEEL_BASE}/BIDsDerivative.sh "$GEAR_OUTPUT_DIR" "$BIDS_OUTPUT_DIR" "$fileRoot" #$subjectName" "$sessionName"
       # zip folder (cd there is easier)
       pushd "$GEAR_OUTPUT_DIR"
     #  zip -r "${GEAR_OUTPUT_DIR}/antsct_${ANALYSIS_ID}_bids.zip" ants-ct
@@ -101,7 +97,7 @@ fi
 
 # Clean up
 #rm -rf "$WORKING_DIR"
-rm $(find "$GEAR_OUTPUT_DIR" -maxdepth 1 -type f | grep -v antsct )
+rm $(find "$GEAR_OUTPUT_DIR" -maxdepth 1 -type f | grep -v antsct ) || echo "No loose files in output folder."
 rm -rf "$ANTS_OUTPUT_DIR"
 
 echo -e "Wrote: $(ls -lh $GEAR_OUTPUT_DIR)"
