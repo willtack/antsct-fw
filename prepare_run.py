@@ -36,23 +36,25 @@ with flywheel.GearContext() as context:
 
     project_label = project_container.label
 
+    # inputs
+    manual_t1 = context.get_input('t1_anatomy')
+    manual_t1_path = None if manual_t1 is None else \
+        PosixPath(context.get_input_path('t1_anatomy'))
+
+    logger.info("manual_t1: %s" % manual_t1)
+    logger.info("manual_t1_path: %s" % manual_t1_path)
+
     # configs, use int() to translate the booleans to 0 or 1
     output_prefix = config.get('output-file-root')
     denoise = int(config.get('denoise'))
     num_threads = config.get('num-threads')
     run_quick = int(config.get('run-quick'))
     trim_neck = int(config.get('trim-neck'))
-    override = int(config.get('force-multiple'))
-
-    # output zips
-    # results_zipfile = gear_output_dir / (analysis_id + "_antsct_results.zip")
-    # debug_derivatives_zipfile = gear_output_dir / (
-    #     analysis_id + "_debug_qsiprep_derivatives.zip")
-    # working_dir_zipfile = gear_output_dir / (analysis_id + "_qsiprep_workdir.zip")
-    # errorlog_zipfile = gear_output_dir / (analysis_id + "_qsiprep_errorlog.zip")
+    override = config.get('force-multiple')
 
 
 def write_command(anat_input, prefix):
+
     """Create a command script."""
     with flywheel.GearContext() as context:
         cmd = ['/opt/scripts/runAntsCT_nonBIDS.pl',
@@ -71,34 +73,6 @@ def write_command(anat_input, prefix):
     return antsct_script.exists()
 
 
-# def get_external_bids(scan_info, local_file):
-#     """Download an external T1 or T2 image.
-#     Query flywheel to find the correct acquisition and get its BIDS
-#     info. scan_info came from context.get_input('*_anatomy').
-#     """
-#     modality = scan_info['object']['modality']
-#     logger.info("Adding additional %s folder...", modality)
-#     external_acq = fw.get(scan_info['hierarchy']['id'])
-#     external_niftis = [f for f in external_acq.files if
-#                        f.name == scan_info['location']['name']]
-#     if not len(external_niftis) == 1:
-#         raise Exception("Unable to find location for extra %s" % modality)
-#     nifti = external_niftis[0]
-#     nifti_bids_path = bids_root / nifti.info['BIDS']['Path']
-#     json_bids_path = str(nifti_bids_path).replace(
-#         "nii.gz", ".json").replace(".nii", ".json")
-#     # Warn if overwriting: Should never happen on purpose
-#     if nifti_bids_path.exists():
-#         logger.warning("Overwriting current T1w image...")
-#     # Copy to / overwrite its place in BIDS
-#     local_file.replace(nifti_bids_path)
-#
-#     # Download the sidecar
-#     export.download_sidecar(nifti.info, json_bids_path)
-#     assert PosixPath(json_bids_path).exists()
-#     assert nifti_bids_path.exists()
-
-
 def fw_heudiconv_download():
     """Use fw-heudiconv to download BIDS data."""
     subjects = [subject_container.label]
@@ -109,11 +83,12 @@ def fw_heudiconv_download():
     downloads = export.gather_bids(fw, project_label, subjects, sessions)
     export.download_bids(fw, downloads, str(bids_dir.resolve()), dry_run=False, folders_to_download=['anat'])
 
-    # Download the extra T1w or T2w
-    # if extra_t1 is not None:
-    #     get_external_bids(extra_t1, extra_t1_path)
-    # if extra_t2 is not None:
-    #     get_external_bids(extra_t2, extra_t2_path)
+    # Use manually specified T1 if it exists
+    if manual_t1 is not None:
+        anat_input = manual_t1_path
+        prefix = 'sub-{}_ses-{}_'.format(subjects[0], sessions[0])
+        return True, anat_input, prefix
+
     layout = BIDSLayout(bids_root)
     anat_list = layout.get(suffix="T1w", extension="nii.gz")
 
@@ -124,6 +99,7 @@ def fw_heudiconv_download():
     # if there are multiple files or no files, error out
     # if there are multiple files but the user said that was okay, use all of them
     # otherwise just use the one
+
     if not override and len(anat_list) > 1:
         logger.warning("Multiple anatomical files found in %s. If you want to process multiple images, make sure to select the override config.", bids_root)
         return False
@@ -156,23 +132,6 @@ def fw_heudiconv_download():
     return True, anat_input, prefix
 
 
-# def create_derivatives_zip(failed):
-#     output_fname = results_zipfile
-#     derivatives_files = list(output_root.glob("**/*"))
-#     with ZipFile(str(output_fname), "w") as zipf:
-#         for derivative_f in derivatives_files:
-#             zipf.write(str(derivative_f),
-#                        str(derivative_f.relative_to(output_root)))
-
-
-# def create_workingdir_zip():
-#     working_files = list(working_dir.glob("**/*"))
-#     with ZipFile(str(working_dir_zipfile), "w") as zipf:
-#         for working_f in working_files:
-#             zipf.write(str(working_f),
-#                        str(working_f.relative_to(working_dir)))
-
-
 def main():
     download_ok, anat_input, prefix = fw_heudiconv_download()
     sys.stdout.flush()
@@ -180,12 +139,6 @@ def main():
     if not download_ok:
         logger.warning("Critical error while trying to download BIDS data.")
         return 1
-    # try:
-    #     anat_input, prefix = fw_heudiconv_download()
-    # except Exception as e:
-    #     print(e)
-    #     logger.warning("Critical error while trying to download BIDS data.")
-    #     return 1
 
     command_ok = write_command(anat_input, prefix)
     sys.stdout.flush()
