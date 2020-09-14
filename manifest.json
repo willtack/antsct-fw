@@ -2,7 +2,7 @@
 	"name": "antsct-fw",
 	"label": "ANTs Cortical Thickness",
 	"description": "Gear version of the antsCorticalThickness.sh pipeline. Performs 1. Brain extraction  2. Brain n-tissue segmentation  3. Cortical thickness  4. (Optional) registration to a template",
-	"version": "0.2.2_0.1.4",
+	"version": "0.3.1_0.1.4",
 	"inputs": {
 		"api_key": {
       		"base": "api-key"
@@ -39,10 +39,15 @@
 			"description": "'true' to run the trim_neck.sh script, 'false' to use the raw data.",
 			"type": "boolean"
 		},
-		"force-multiple": {
-			"default": false,
-			"description": "check this box if you have multiple T1 images in BIDS and want them all processed. Otherwise, multiple images will throw an error.",
-			"type": "boolean"
+		"BIDS-acq": {
+			"default": "",
+			"description": "The acq- field of the input image filename. Leave blank if the correct file is distinguishable without an acq- field.",
+			"type": "string"
+		},
+		"BIDS-run": {
+			"default": "",
+			"description": "The run- field of the input image filename. Leave blank if there is only one run.",
+			"type": "string"
 		}
 	},
 	"author": "Tustison, et al. | Modified for Flywheel by Philip Cook, Will Tackett",
