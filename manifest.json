@@ -59,7 +59,7 @@
 	"custom": {
 		"gear-builder": {
 			"category": "analysis",
-			"image": "willtack/antsct-fw:0.2.2_0.1.4"
+			"image": "willtack/antsct-fw:0.3.1_0.1.4"
 		},
 		"flywheel":{"suite": "BrainScienceCenter"}
 	}
