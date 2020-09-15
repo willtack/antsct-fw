@@ -62,6 +62,9 @@ if [[ $ANTS_EXITSTATUS == 0 ]]; then
   subjectName=$(echo "$fileRoot" | cut -d '_' -f 1)
   sessionName=$(echo "$fileRoot" | cut -d '_' -f 2)
 
+  LOOSE_DIR=$GEAR_OUTPUT_DIR/loose
+  mkdir $LOOSE_DIR
+
   if [[ $inputFormat = 'bids' ]]; then
 
       # make a BIDS derivatives folder and zip
@@ -75,6 +78,9 @@ if [[ $ANTS_EXITSTATUS == 0 ]]; then
     #  zip -r "${GEAR_OUTPUT_DIR}/antsct_${ANALYSIS_ID}_bids.zip" ants-ct
       zip -r "${GEAR_OUTPUT_DIR}/antsct_${subjectName}_${sessionName}_bids.zip" ants-ct
       popd
+
+      mv $(find "$BIDS_OUTPUT_DIR" -type f | grep csv) "$LOOSE_DIR"
+      mv $(find "$BIDS_OUTPUT_DIR" -type f | grep png) "$LOOSE_DIR"
       rm -rf "$BIDS_OUTPUT_DIR"
   elif [[ $inputFormat = 'manual' ]]; then
       # move everything in outputs folder to a single directory and zip
@@ -89,6 +95,9 @@ if [[ $ANTS_EXITSTATUS == 0 ]]; then
       #zip -r "${GEAR_OUTPUT_DIR}/antsct_${ANALYSIS_ID}.zip" ./*
       zip -r "${GEAR_OUTPUT_DIR}/antsct_${subjectName}_${subjectName}.zip" ./*
       popd
+
+      mv $(find "$LEGACY_OUTPUT_DIR" -type f | grep csv) "$LOOSE_DIR"
+      mv $(find "$LEGACY_OUTPUT_DIR" -type f | grep png) "$LOOSE_DIR"
       rm -rf "$LEGACY_OUTPUT_DIR"
   else
     error_exit "Unable to determine input format..."
@@ -97,7 +106,9 @@ fi
 
 # Clean up
 #rm -rf "$WORKING_DIR"
-rm $(find "$GEAR_OUTPUT_DIR" -maxdepth 1 -type f | grep -v antsct ) || echo "No loose files in output folder."
+rm $(find "$GEAR_OUTPUT_DIR" -maxdepth 1 -type f | grep -v antsct | grep -v loose) || echo "No loose files in output folder."
+mv $LOOSE_DIR/* $GEAR_OUTPUT_DIR
+rmdir $LOOSE_DIR
 rm -rf "$ANTS_OUTPUT_DIR"
 
 echo -e "Wrote: $(ls -lh $GEAR_OUTPUT_DIR)"
