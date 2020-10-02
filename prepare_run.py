@@ -3,6 +3,8 @@ import sys
 import logging
 from zipfile import ZipFile
 from pathlib import PosixPath
+from templateflow import api as tflow
+from shutil import copy2
 from fw_heudiconv.cli import export
 from bids import BIDSLayout
 import flywheel
@@ -58,7 +60,6 @@ with flywheel.GearContext() as context:
 
 
 def write_command(anat_input, prefix):
-
     """Create a command script."""
     with flywheel.GearContext() as context:
         cmd = ['/opt/scripts/runAntsCT_nonBIDS.pl',
@@ -138,8 +139,58 @@ def fw_heudiconv_download():
     return True, anat_input, prefix
 
 
+def get_template():
+    template = config.get('template')
+    template_list = []
+    orig = tflow.get(template, resolution=1, desc=None, suffix='T1w')
+    if not orig.exists():
+        logger.warning("Unable to find original T1w image.")
+    elif type(orig) == list:
+        logger.warning("Unable to resolve T1w file.")
+    else:
+        template_list.append(orig)
+
+    brain_extracted = tflow.get(template, resolution=1, desc='brain', suffix='T1w')
+    if not brain_extracted.exists():
+        logger.warning("Unable to find brain-extracted T1w image.")
+        return 1
+    elif type(brain_extracted) == list:
+        logger.warning("Unable to resolve brain-extracted T1w file.")
+        return 1
+    else:
+        template_list.append(brain_extracted)
+
+    reg_mask = tflow.get(template, resolution=1, desc='BrainCerebellumRegisration', suffix='mask')
+    if not reg_mask.exists():
+        logger.warning("Unable to find registration mask.")
+        return 1
+    elif type(reg_mask) == list:
+        logger.warning("Unable to resolve registration mask file.")
+        return 1
+    else:
+        template_list.append(reg_mask)
+
+    # get all the tissue priors (including the brain probability)
+    tissue_probs = tflow.get(template, resolution=1, suffix='probseg')
+    if len(tissue_probs) < 7:
+        logger.warning("Unable to resolve find one or more tissue priors:")
+        print(tissue_probs)
+        return
+    else:
+        for t in tissue_probs:
+            template.append(t)
+
+    # make a directory to feed into perl run script
+    template_dir_path = '/flywheel/v0/tpl-'+template
+    os.mkdir(template_dir_path, exist_ok=True)
+    for file in template_list:
+        copy2(file, template_dir_path)
+
+    return template_dir_path
+
 
 def main():
+    template_dir = get_template()
     download_ok, anat_input, prefix = fw_heudiconv_download()
     sys.stdout.flush()
     sys.stderr.flush()
@@ -147,7 +198,7 @@ def main():
         logger.warning("Critical error while trying to download BIDS data.")
         return 1
 
-    command_ok = write_command(anat_input, prefix)
+    command_ok = write_command(anat_input, prefix, template_dir)
     sys.stdout.flush()
     sys.stderr.flush()
     if not command_ok:

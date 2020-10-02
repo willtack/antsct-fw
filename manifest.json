@@ -19,6 +19,17 @@
     	}
 	},
 	"config": {
+		"template": {
+			"default": "TxAging",
+			"description": "The template to use for brain extraction and registration.",
+			"enum": [
+				"TxAging",
+				"OASIS30ANTS",
+				"MNI152NLin2009cAsym",
+				"NKI"
+			],
+			"type": "string"
+		},
 		"denoise": {
 			"default": true,
 			"description": "Run denoising within the ACT pipeline.",
