@@ -39,6 +39,16 @@
 			"description": "'true' to run the trim_neck.sh script, 'false' to use the raw data.",
 			"type": "boolean"
 		},
+		"BIDS-subject": {
+			"default": "",
+			"description": "The sub- field of the input image filename. Leave blank if the correct file is distinguishable without a sub- field.",
+			"type": "string"
+		},
+		"BIDS-session": {
+			"default": "",
+			"description": "The ses- field of the input image filename. Leave blank if the correct file is distinguishable without a ses- field.",
+			"type": "string"
+		},
 		"BIDS-acq": {
 			"default": "",
 			"description": "The acq- field of the input image filename. Leave blank if the correct file is distinguishable without an acq- field.",

@@ -53,6 +53,8 @@ with flywheel.GearContext() as context:
     trim_neck = int(config.get('trim-neck'))
     bids_acq = config.get('BIDS-acq')
     bids_run = config.get('BIDS-run')
+    bids_sub = config.get('BIDS-subject')
+    bids_ses = config.get('BIDS-session')
 
 
 def write_command(anat_input, prefix):
@@ -97,7 +99,15 @@ def fw_heudiconv_download():
     # subject_label = layout.get(return_type='id', target='subject')[0].strip("[']")
     # session_label = layout.get(return_type='id', target='session')[0].strip("[']")
 
-    filters = {"subject": subjects}
+    filters = {}
+    if bids_sub:
+        filters["subject"] = [bids_sub]
+    else:
+        filters["subject"] = subjects
+    if bids_ses:
+        filters["session"] = [bids_ses]
+    else:
+        filters["session"] = sessions
 
     if bids_acq:
         filters["acquisition"] = bids_acq
@@ -126,6 +136,7 @@ def fw_heudiconv_download():
     prefix = basename.replace('_T1w', '') + '_'
 
     return True, anat_input, prefix
+
 
 
 def main():
