@@ -40,7 +40,8 @@ RUN pip install flywheel-sdk
 RUN pip install heudiconv
 RUN pip install --upgrade fw-heudiconv ipython
 RUN pip install pybids
-
+RUN pip install -U templateflow
+ENV TEMPLATEFLOW_HOME /flywheel/v0/.templateflow
 
 ############################
 # Make directory for flywheel spec (v0)
@@ -50,6 +51,7 @@ COPY run ${FLYWHEEL}/run
 COPY prepare_run.py ${FLYWHEEL}/prepare_run.py
 COPY manifest.json ${FLYWHEEL}/manifest.json
 COPY BIDsDerivative.sh ${FLYWHEEL}/BIDsDerivative.sh
+COPY .templateflow ${FLYWHEEL}/.templateflow
 RUN chmod a+rx ${FLYWHEEL}/*
 
 # Set the entrypoint

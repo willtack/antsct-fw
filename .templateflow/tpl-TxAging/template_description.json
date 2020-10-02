@@ -1,0 +1,33 @@
+{
+  "Authors": [
+    "Tustison NJ",
+    "Cook PA",
+  ],
+  "BIDSVersion": "1.4.0",
+  "Identifier": "TxAging",
+  "License": "",
+  "Name": "TxAging - Aging brain template created by Nick Tustison.",
+  "ReferencesAndLinks": [
+    "https://github.com/ftdc-picsl/antsct-aging/tree/master/template"
+  ],
+  "TemplateFlowVersion": "0.6.2",
+  "res": {
+    "01": {
+      "origin": [
+        -102.88,
+        -147.09,
+        104.5
+      ],
+      "shape": [
+        256,
+        256,
+        170
+      ],
+      "zooms": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    }
+  }
+}
