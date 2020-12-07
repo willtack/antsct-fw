@@ -59,7 +59,7 @@ with flywheel.GearContext() as context:
     bids_ses = config.get('BIDS-session')
 
 
-def write_command(anat_input, prefix):
+def write_command(anat_input, prefix): # , template_dir):
     """Create a command script."""
     with flywheel.GearContext() as context:
         cmd = ['/opt/scripts/runAntsCT_nonBIDS.pl',
@@ -143,7 +143,7 @@ def get_template():
     template = config.get('template')
     template_list = []
     orig = tflow.get(template, resolution=1, desc=None, suffix='T1w')
-    if not orig.exists():
+    if not orig:
         logger.warning("Unable to find original T1w image.")
     elif type(orig) == list:
         logger.warning("Unable to resolve T1w file.")
@@ -173,16 +173,16 @@ def get_template():
     # get all the tissue priors (including the brain probability)
     tissue_probs = tflow.get(template, resolution=1, suffix='probseg')
     if len(tissue_probs) < 7:
-        logger.warning("Unable to resolve find one or more tissue priors:")
+        logger.warning("Unable to find one or more tissue priors:")
         print(tissue_probs)
-        return
+        return 1
     else:
         for t in tissue_probs:
-            template.append(t)
+            template_list.append(t)
 
     # make a directory to feed into perl run script
     template_dir_path = '/flywheel/v0/tpl-'+template
-    os.mkdir(template_dir_path, exist_ok=True)
+    os.makedirs(template_dir_path, exist_ok=True)
     for file in template_list:
         copy2(file, template_dir_path)
 
@@ -190,7 +190,7 @@ def get_template():
 
 
 def main():
-    template_dir = get_template()
+    # template_dir = get_template()
     download_ok, anat_input, prefix = fw_heudiconv_download()
     sys.stdout.flush()
     sys.stderr.flush()
@@ -198,7 +198,7 @@ def main():
         logger.warning("Critical error while trying to download BIDS data.")
         return 1
 
-    command_ok = write_command(anat_input, prefix, template_dir)
+    command_ok = write_command(anat_input, prefix)  # , template_dir)
     sys.stdout.flush()
     sys.stderr.flush()
     if not command_ok:
