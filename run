@@ -81,6 +81,8 @@ if [[ $ANTS_EXITSTATUS == 0 ]]; then
 
       mv $(find "$BIDS_OUTPUT_DIR" -type f | grep csv) "$LOOSE_DIR"
       mv $(find "$BIDS_OUTPUT_DIR" -type f | grep png) "$LOOSE_DIR"
+      mv $(find "$BIDS_OUTPUT_DIR" -type f | grep desc-thickness) "$LOOSE_DIR"
+
       rm -rf "$BIDS_OUTPUT_DIR"
   elif [[ $inputFormat = 'manual' ]]; then
       # move everything in outputs folder to a single directory and zip
@@ -98,6 +100,7 @@ if [[ $ANTS_EXITSTATUS == 0 ]]; then
 
       mv $(find "$LEGACY_OUTPUT_DIR" -type f | grep csv) "$LOOSE_DIR"
       mv $(find "$LEGACY_OUTPUT_DIR" -type f | grep png) "$LOOSE_DIR"
+      mv $(find "$LEGACY_OUTPUT_DIR" -type f | grep CorticalThickness) "$LOOSE_DIR"
       rm -rf "$LEGACY_OUTPUT_DIR"
   else
     error_exit "Unable to determine input format..."
