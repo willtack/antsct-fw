@@ -160,7 +160,7 @@ def get_template():
     else:
         template_list.append(brain_extracted)
 
-    reg_mask = tflow.get(template, resolution=1, desc='BrainCerebellumRegisration', suffix='mask')
+    reg_mask = tflow.get(template, resolution=1, desc='BrainCerebellumRegistration', suffix='mask')
     if not reg_mask.exists():
         logger.warning("Unable to find registration mask.")
         return 1
