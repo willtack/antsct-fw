@@ -91,7 +91,9 @@ def fw_heudiconv_download():
     # Use manually specified T1 if it exists
     if manual_t1 is not None:
         anat_input = manual_t1_path
-        prefix = 'sub-{}_ses-{}_'.format(subjects[0], sessions[0])
+        subject_label = subject_container.label.replace('_', 'x')
+        session_label = session_container.label.replace('_', 'x')
+        prefix = 'sub-{}_ses-{}_'.format(subject_label, session_label)
         return True, anat_input, prefix
 
     layout = BIDSLayout(bids_root)
