@@ -83,11 +83,6 @@ def fw_heudiconv_download():
     subjects = [subject_container.label]
     sessions = [session_container.label]
 
-    # Do the download!
-    bids_root.parent.mkdir(parents=True, exist_ok=True)
-    downloads = export.gather_bids(fw, project_label, subjects, sessions)
-    export.download_bids(fw, downloads, str(bids_dir.resolve()), dry_run=False, folders_to_download=['anat'])
-
     # Use manually specified T1 if it exists
     if manual_t1 is not None:
         anat_input = manual_t1_path
@@ -95,6 +90,11 @@ def fw_heudiconv_download():
         session_label = session_container.label.replace('_', 'x')
         prefix = 'sub-{}_ses-{}_'.format(subject_label, session_label)
         return True, anat_input, prefix
+
+    # Do the download!
+    bids_root.parent.mkdir(parents=True, exist_ok=True)
+    downloads = export.gather_bids(fw, project_label, subjects, sessions)
+    export.download_bids(fw, downloads, str(bids_dir.resolve()), dry_run=False, folders_to_download=['anat'])
 
     layout = BIDSLayout(bids_root)
 
