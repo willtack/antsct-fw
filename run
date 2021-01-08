@@ -105,14 +105,15 @@ if [[ $ANTS_EXITSTATUS == 0 ]]; then
   else
     error_exit "Unable to determine input format..."
   fi
+
+  # Clean up
+  #rm -rf "$WORKING_DIR"
+  rm $(find "$GEAR_OUTPUT_DIR" -maxdepth 1 -type f | grep -v antsct | grep -v loose) || echo "No loose files in output folder."
+  mv $LOOSE_DIR/* $GEAR_OUTPUT_DIR
+  rmdir $LOOSE_DIR
+
 fi
 
-# Clean up
-#rm -rf "$WORKING_DIR"
-rm $(find "$GEAR_OUTPUT_DIR" -maxdepth 1 -type f | grep -v antsct | grep -v loose) || echo "No loose files in output folder."
-mv $LOOSE_DIR/* $GEAR_OUTPUT_DIR
-rmdir $LOOSE_DIR
 rm -rf "$ANTS_OUTPUT_DIR"
-
 echo -e "Wrote: $(ls -lh $GEAR_OUTPUT_DIR)"
 exit $ANTS_EXITSTATUS

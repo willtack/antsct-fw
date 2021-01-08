@@ -39,10 +39,18 @@ with flywheel.GearContext() as context:
 
     project_label = project_container.label
 
-    # inputs
+    # get T1 input if it exists
     manual_t1 = context.get_input('t1_anatomy')
-    manual_t1_path = None if manual_t1 is None else \
+    manual_t1_path_config = None if manual_t1 is None else \
         PosixPath(context.get_input_path('t1_anatomy'))
+
+    # replace any spaces in the string
+    if ' ' in str(manual_t1_path_config):
+        manual_t1_path = PosixPath(str(manual_t1_path_config).replace(' ', '_'))
+        # rename the actual file
+        os.rename(manual_t1_path_config, manual_t1_path)
+    else:
+        manual_t1_path = manual_t1_path_config
 
     logger.info("manual_t1: %s" % manual_t1)
     logger.info("manual_t1_path: %s" % manual_t1_path)
