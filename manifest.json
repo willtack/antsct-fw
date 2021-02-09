@@ -138,7 +138,7 @@
 	},
 	"author": "Tustison, et al. | Modified for Flywheel by Philip Cook, Will Tackett",
 	"maintainer": "Philip Cook, Will Tackett",
-	"cite": "Tustison, Nicholas \u0026 Avants, Brian \u0026 Cook, Philip \u0026 Song, Gang \u0026 Das, Sandhitsu \u0026 van Strien, Niels \u0026 Stone, James \u0026 Gee, James. (2013). The ANTs cortical thickness processing pipeline. Progress in Biomedical Optics and Imaging - Proceedings of SPIE. 8672. 86720K. 10.1117/12.2007128. ",
+	"cite": "Tustison NJ, Cook PA, Klein A, Song G, Das SR, Duda JT, Kandel BM, van Strien N, Stone JR, Gee JC, Avants BB. Large-scale evaluation of ANTs and FreeSurfer cortical thickness measurements. Neuroimage. 2014 Oct 1;99:166-79. doi: 10.1016/j.neuroimage.2014.05.044. Epub 2014 May 29. PMID: 24879923.",
 	"license": "Apache-2.0",
 	"source": "https://github.com/willtack/antsct_fw",
 	"url": "https://doi.org/10.1117/12.2007128",
