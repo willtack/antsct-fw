@@ -2,7 +2,7 @@
 
 ############################
 # Get the image from DockerHub
-FROM cookpa/antsct-aging:0.1.4
+FROM cookpa/antsct-aging:0.2.0
 
 MAINTAINER Will Tackett <William.Tackett@pennmedicine.upenn.edu>
 
@@ -56,7 +56,7 @@ RUN chmod a+rx ${FLYWHEEL}/*
 
 # Set the entrypoint
 ENTRYPOINT ["/flywheel/v0/run"]
-
+ 
 ############################
 # ENV preservation for Flywheel Engine
 RUN env -u HOSTNAME -u PWD | \
