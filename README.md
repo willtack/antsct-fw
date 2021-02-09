@@ -6,4 +6,4 @@ Repository for original Docker image: https://github.com/ftdc-picsl/antsct-aging
 antsCorticalThickness.sh [guide](https://github.com/ANTsX/ANTs/wiki/antsCorticalThickness-and-antsLongitudinalCorticalThickness-output) and [example](https://github.com/ntustison/antsCorticalThicknessExample)
 
 
-Nicholas J. Tustison, Brian B. Avants, Philip A. Cook, Gang Song, Sandhitsu Das, Niels van Strien, James R. Stone, and James C. Gee "The ANTs cortical thickness processing pipeline", Proc. SPIE 8672, Medical Imaging 2013: Biomedical Applications in Molecular, Structural, and Functional Imaging, 86720K (29 March 2013); https://doi.org/10.1117/12.2007128
+Tustison NJ, Cook PA, Klein A, Song G, Das SR, Duda JT, Kandel BM, van Strien N, Stone JR, Gee JC, Avants BB. Large-scale evaluation of ANTs and FreeSurfer cortical thickness measurements. Neuroimage. 2014 Oct 1;99:166-79. doi: 10.1016/j.neuroimage.2014.05.044. Epub 2014 May 29. PMID: 24879923.
