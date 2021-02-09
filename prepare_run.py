@@ -52,11 +52,52 @@ with flywheel.GearContext() as context:
     else:
         manual_t1_path = manual_t1_path_config
 
+    mni_cort_labels_1 = context.get_input('mni-cortical-labels-1')
+    mni_cort_labels_1_path = None if mni_cort_labels_1 is None else \
+        PosixPath(context.get_input_path('mni-cortical-labels-1'))
+
+    mni_cort_labels_2 = context.get_input('mni-cortical-labels-2')
+    mni_cort_labels_2_path = None if mni_cort_labels_2 is None else \
+        PosixPath(context.get_input_path('mni-cortical-labels-2'))
+
+    mni_cort_labels_3 = context.get_input('mni-cortical-labels-3')
+    mni_cort_labels_3_path = None if mni_cort_labels_3 is None else \
+        PosixPath(context.get_input_path('mni-cortical-labels-3'))
+
+    # create space separated list (str)
+    mni_cort_labels_path_list = [mni_cort_labels_1_path, mni_cort_labels_2_path, mni_cort_labels_3_path]
+    # use list comprehension to remove None values
+    mni_cort_labels_path_list = [str(i) for i in mni_cort_labels_path_list if i]
+    mni_cort_labels_paths_str = " ".join(mni_cort_labels_path_list)
+
+    mni_labels_1 = context.get_input('mni-labels-1')
+    mni_labels_1_path = None if mni_labels_1 is None else \
+        PosixPath(context.get_input_path('mni-labels-1'))
+
+    mni_labels_2 = context.get_input('mni-labels-2')
+    mni_labels_2_path = None if mni_labels_2 is None else \
+        PosixPath(context.get_input_path('mni-labels-2'))
+
+    mni_labels_3 = context.get_input('mni-labels-3')
+    mni_labels_3_path = None if mni_labels_3 is None else \
+        PosixPath(context.get_input_path('mni-labels-3'))
+
+    # create space separated list (str)
+    mni_labels_path_list = [mni_labels_1_path, mni_labels_2_path, mni_labels_3_path]
+    # use list comprehension to remove None values
+    mni_labels_path_list = [str(i) for i in mni_labels_path_list if i]
+    mni_labels_paths_str = " ".join(mni_labels_path_list)
+
     logger.info("manual_t1: %s" % manual_t1)
     logger.info("manual_t1_path: %s" % manual_t1_path)
 
+    # Get template zip
+    template_zip = context.get_input('template-zip')
+    template_zip_path = None if template_zip is None else \
+        PosixPath(context.get_input_path('template-zip'))
+
     # configs, use int() to translate the booleans to 0 or 1
-    output_prefix = config.get('output-file-root')
+    # output_prefix = config.get('output-file-root')
     denoise = int(config.get('denoise'))
     num_threads = config.get('num-threads')
     run_quick = int(config.get('run-quick'))
@@ -67,7 +108,7 @@ with flywheel.GearContext() as context:
     bids_ses = config.get('BIDS-session')
 
 
-def write_command(anat_input, prefix): # , template_dir):
+def write_command(anat_input, prefix):  # , template_dir):
     """Create a command script."""
     with flywheel.GearContext() as context:
         cmd = ['/opt/scripts/runAntsCT_nonBIDS.pl',
@@ -79,6 +120,12 @@ def write_command(anat_input, prefix): # , template_dir):
                '--run-quick {}'.format(run_quick),
                '--trim-neck {}'.format(trim_neck)
                ]
+        if mni_cort_labels_paths_str:
+            cmd.append('--mni-cortical-labels {}'.format(mni_cort_labels_paths_str))
+
+        if mni_labels_paths_str:
+            cmd.append('--mni-labels {}'.format(mni_labels_paths_str))
+
     logger.info(' '.join(cmd))
     with antsct_script.open('w') as f:
         f.write(' '.join(cmd))
@@ -150,51 +197,64 @@ def fw_heudiconv_download():
 
 
 def get_template():
-    template = config.get('template')
-    template_list = []
-    orig = tflow.get(template, resolution=1, desc=None, suffix='T1w')
-    if not orig:
-        logger.warning("Unable to find original T1w image.")
-    elif type(orig) == list:
-        logger.warning("Unable to resolve T1w file.")
-    else:
-        template_list.append(orig)
+    """Return path to folder containing custom template files."""
+    # Inputting a template zip files overrides the template configuration selection.
+    if template_zip_path:
+        basename = os.path.splitext(os.basename(template_zip_path))
+        # make a directory to feed into perl run script
+        template_dir_path = '/flywheel/v0/tpl-' + basename
+        os.makedirs(template_dir_path, exist_ok=True)
 
-    brain_extracted = tflow.get(template, resolution=1, desc='brain', suffix='T1w')
-    if not brain_extracted.exists():
-        logger.warning("Unable to find brain-extracted T1w image.")
-        return 1
-    elif type(brain_extracted) == list:
-        logger.warning("Unable to resolve brain-extracted T1w file.")
-        return 1
-    else:
-        template_list.append(brain_extracted)
+        import zipfile
+        with zipfile.ZipFile(template_zip_path, "r") as zip_ref:
+            zip_ref.extractall(template_dir_path)
 
-    reg_mask = tflow.get(template, resolution=1, desc='BrainCerebellumRegistration', suffix='mask')
-    if not reg_mask.exists():
-        logger.warning("Unable to find registration mask.")
-        return 1
-    elif type(reg_mask) == list:
-        logger.warning("Unable to resolve registration mask file.")
-        return 1
     else:
-        template_list.append(reg_mask)
+        template = config.get('template')
+        template_list = []
+        orig = tflow.get(template, resolution=1, desc=None, suffix='T1w')
+        if not orig:
+            logger.warning("Unable to find original T1w image.")
+        elif type(orig) == list:
+            logger.warning("Unable to resolve T1w file.")
+        else:
+            template_list.append(orig)
 
-    # get all the tissue priors (including the brain probability)
-    tissue_probs = tflow.get(template, resolution=1, suffix='probseg')
-    if len(tissue_probs) < 7:
-        logger.warning("Unable to find one or more tissue priors:")
-        print(tissue_probs)
-        return 1
-    else:
-        for t in tissue_probs:
-            template_list.append(t)
+        brain_extracted = tflow.get(template, resolution=1, desc='brain', suffix='T1w')
+        if not brain_extracted.exists():
+            logger.warning("Unable to find brain-extracted T1w image.")
+            return 1
+        elif type(brain_extracted) == list:
+            logger.warning("Unable to resolve brain-extracted T1w file.")
+            return 1
+        else:
+            template_list.append(brain_extracted)
 
-    # make a directory to feed into perl run script
-    template_dir_path = '/flywheel/v0/tpl-'+template
-    os.makedirs(template_dir_path, exist_ok=True)
-    for file in template_list:
-        copy2(file, template_dir_path)
+        reg_mask = tflow.get(template, resolution=1, desc='BrainCerebellumRegistration', suffix='mask')
+        if not reg_mask.exists():
+            logger.warning("Unable to find registration mask.")
+            return 1
+        elif type(reg_mask) == list:
+            logger.warning("Unable to resolve registration mask file.")
+            return 1
+        else:
+            template_list.append(reg_mask)
+
+        # get all the tissue priors (including the brain probability)
+        tissue_probs = tflow.get(template, resolution=1, suffix='probseg')
+        if len(tissue_probs) < 7:
+            logger.warning("Unable to find one or more tissue priors:")
+            print(tissue_probs)
+            return 1
+        else:
+            for t in tissue_probs:
+                template_list.append(t)
+
+        # make a directory to feed into perl run script
+        template_dir_path = '/flywheel/v0/tpl-'+template
+        os.makedirs(template_dir_path, exist_ok=True)
+        for file in template_list:
+            copy2(file, template_dir_path)
 
     return template_dir_path
 
